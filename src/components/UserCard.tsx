@@ -109,7 +109,17 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     borderWidth: 1,
     borderColor: colors.slate100,
-    ...PlatformSelectShadow(),
+    ...Platform.select({
+      ios: {
+        shadowColor: colors.slate900,
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.03,
+        shadowRadius: 6,
+      },
+      android: {
+        elevation: 2,
+      },
+    }),
   },
   cardHeader: {
     flexDirection: "row",
@@ -253,25 +263,4 @@ const styles = StyleSheet.create({
   },
 });
 
-function PlatformSelectShadow() {
-  return React.useMemo(() => {
-    return {
-      ...StyleSheet.create({
-        shadow: {
-          ...StyleSheet.absoluteFillObject,
-          ...Platform.select({
-            ios: {
-              shadowColor: colors.slate900,
-              shadowOffset: { width: 0, height: 4 },
-              shadowOpacity: 0.03,
-              shadowRadius: 6,
-            },
-            android: {
-              elevation: 2,
-            },
-          }),
-        }
-      }).shadow
-    };
-  }, []);
-}
+
