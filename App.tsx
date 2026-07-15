@@ -46,7 +46,7 @@ export default function App() {
   const [token, setToken] = useState<string | null>(null);
 
   // API URL State
-  const [backendUrl, setBackendUrl] = useState("http://localhost:8080");
+  const [backendUrl, setBackendUrl] = useState("https://banister-deodorize-unsavory.ngrok-free.dev");
   const [showSettings, setShowSettings] = useState(false);
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(false);
@@ -654,130 +654,130 @@ export default function App() {
   return (
     <SafeAreaProvider>
       <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor={colors.slate50} />
+        <StatusBar barStyle="dark-content" backgroundColor={colors.slate50} />
 
-      {/* Header bar only visible on Login & Cadastro screens (Home has its own header) */}
-      {currentScreen !== "HOME" && (
-        <View style={styles.header}>
-          <View style={styles.headerLogoContainer}>
-            <Leaf size={24} color={colors.lime500} style={styles.headerIcon} />
-            <Text style={styles.headerTitle}>
-              Eco<Text style={styles.headerTitleHighlight}>Ciclo</Text>
-            </Text>
+        {/* Header bar only visible on Login & Cadastro screens (Home has its own header) */}
+        {currentScreen !== "HOME" && (
+          <View style={styles.header}>
+            <View style={styles.headerLogoContainer}>
+              <Leaf size={24} color={colors.lime500} style={styles.headerIcon} />
+              <Text style={styles.headerTitle}>
+                Eco<Text style={styles.headerTitleHighlight}>Ciclo</Text>
+              </Text>
+            </View>
+            <View style={styles.headerActions}>
+              <TouchableOpacity
+                style={[styles.connectionIndicator, styles[connectionStatus]]}
+                onPress={() => fetchUsers(false)}
+              >
+                {connectionStatus === "connected" ? (
+                  <Wifi size={16} color={colors.slate600} />
+                ) : connectionStatus === "checking" ? (
+                  <ActivityIndicator size="small" color={colors.lime500} />
+                ) : (
+                  <WifiOff size={16} color={colors.red500} />
+                )}
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.settingsButton}
+                onPress={() => setShowSettings(!showSettings)}
+              >
+                <Settings size={20} color={colors.slate600} />
+              </TouchableOpacity>
+            </View>
           </View>
-          <View style={styles.headerActions}>
-            <TouchableOpacity
-              style={[styles.connectionIndicator, styles[connectionStatus]]}
-              onPress={() => fetchUsers(false)}
-            >
-              {connectionStatus === "connected" ? (
-                <Wifi size={16} color={colors.slate600} />
-              ) : connectionStatus === "checking" ? (
-                <ActivityIndicator size="small" color={colors.lime500} />
-              ) : (
-                <WifiOff size={16} color={colors.red500} />
-              )}
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.settingsButton}
-              onPress={() => setShowSettings(!showSettings)}
-            >
-              <Settings size={20} color={colors.slate600} />
-            </TouchableOpacity>
-          </View>
-        </View>
-      )}
+        )}
 
-      {/* Global alert message banner */}
-      <AlertBanner message={alertMessage} />
+        {/* Global alert message banner */}
+        <AlertBanner message={alertMessage} />
 
-      {/* Settings configuration Panel */}
-      {showSettings && currentScreen !== "HOME" && (
-        <SettingsPanel
-          backendUrl={backendUrl}
-          setBackendUrl={setBackendUrl}
-          onTestConnection={() => fetchUsers(false)}
-        />
-      )}
+        {/* Settings configuration Panel */}
+        {showSettings && currentScreen !== "HOME" && (
+          <SettingsPanel
+            backendUrl={backendUrl}
+            setBackendUrl={setBackendUrl}
+            onTestConnection={() => fetchUsers(false)}
+          />
+        )}
 
-      {/* Screen Router */}
-      {currentScreen === "LOGIN" && (
-        <LoginScreen
-          loginEmail={loginEmail}
-          setLoginEmail={setLoginEmail}
-          loginPassword={loginPassword}
-          setLoginPassword={setLoginPassword}
-          onLogin={handleLogin}
-          onNavigateToRegister={() => setCurrentScreen("CADASTRO")}
+        {/* Screen Router */}
+        {currentScreen === "LOGIN" && (
+          <LoginScreen
+            loginEmail={loginEmail}
+            setLoginEmail={setLoginEmail}
+            loginPassword={loginPassword}
+            setLoginPassword={setLoginPassword}
+            onLogin={handleLogin}
+            onNavigateToRegister={() => setCurrentScreen("CADASTRO")}
+            loading={loading}
+          />
+        )}
+
+        {currentScreen === "CADASTRO" && (
+          <CadastroScreen
+            formName={formName}
+            setFormName={setFormName}
+            formEmail={formEmail}
+            setFormEmail={setFormEmail}
+            formPassword={formPassword}
+            setFormPassword={setFormPassword}
+            formType={formType}
+            setFormType={setFormType}
+            formCfp={formCfp}
+            setFormCfp={setFormCfp}
+            onRegister={handleRegister}
+            onNavigateToLogin={() => setCurrentScreen("LOGIN")}
+            loading={loading}
+          />
+        )}
+
+        {currentScreen === "HOME" && loggedInUser && (
+          <HomeScreen
+            loggedInUser={loggedInUser}
+            users={users}
+            connectionStatus={connectionStatus}
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            onLogout={handleLogout}
+            onTestConnection={() => fetchUsers(false)}
+            onActivateWallet={handleCreateWallet}
+            onDeleteUser={handleDeleteUser}
+            onOpenManagerModal={openManagerModal}
+            onOpenSimulationModal={() => setSimulationModalVisible(true)}
+            onOpenRedeemModal={openRedeemModal}
+            onEarn={openEarnModal}
+            onSpend={openSpendModal}
+            onBuyProduct={handleBuyProduct}
+            getDisplayAmount={getDisplayAmount}
+          />
+        )}
+
+        {/* MODAL: Employee Management (Add/Edit Integrantes) */}
+        <ModalUserForm
+          visible={managerModalVisible}
+          onClose={() => setManagerModalVisible(false)}
+          editingUser={editingUser}
+          onSave={handleManagerSaveUser}
           loading={loading}
         />
-      )}
 
-      {currentScreen === "CADASTRO" && (
-        <CadastroScreen
-          formName={formName}
-          setFormName={setFormName}
-          formEmail={formEmail}
-          setFormEmail={setFormEmail}
-          formPassword={formPassword}
-          setFormPassword={setFormPassword}
-          formType={formType}
-          setFormType={setFormType}
-          formCfp={formCfp}
-          setFormCfp={setFormCfp}
-          onRegister={handleRegister}
-          onNavigateToLogin={() => setCurrentScreen("LOGIN")}
-          loading={loading}
+        {/* MODAL: Customer Recycling Simulation */}
+        <ModalSimulateRecycle
+          visible={simulationModalVisible}
+          onClose={() => setSimulationModalVisible(false)}
+          onSimulate={handleSimulateDeposit}
         />
-      )}
 
-      {currentScreen === "HOME" && loggedInUser && (
-        <HomeScreen
-          loggedInUser={loggedInUser}
-          users={users}
-          connectionStatus={connectionStatus}
-          refreshing={refreshing}
-          onRefresh={onRefresh}
-          onLogout={handleLogout}
-          onTestConnection={() => fetchUsers(false)}
-          onActivateWallet={handleCreateWallet}
-          onDeleteUser={handleDeleteUser}
-          onOpenManagerModal={openManagerModal}
-          onOpenSimulationModal={() => setSimulationModalVisible(true)}
-          onOpenRedeemModal={openRedeemModal}
-          onEarn={openEarnModal}
-          onSpend={openSpendModal}
-          onBuyProduct={handleBuyProduct}
-          getDisplayAmount={getDisplayAmount}
+        {/* MODAL: Transaction Amount Input (Earn/Spend/Redeem) */}
+        <ModalAmountTransaction
+          visible={transactionModalVisible}
+          onClose={() => setTransactionModalVisible(false)}
+          title={transactionModalTitle}
+          description={transactionModalDesc}
+          submitLabel={transactionModalSubmitLabel}
+          onSubmit={handleTransactionSubmit}
+          loading={transactionLoading}
         />
-      )}
-
-      {/* MODAL: Employee Management (Add/Edit Integrantes) */}
-      <ModalUserForm
-        visible={managerModalVisible}
-        onClose={() => setManagerModalVisible(false)}
-        editingUser={editingUser}
-        onSave={handleManagerSaveUser}
-        loading={loading}
-      />
-
-      {/* MODAL: Customer Recycling Simulation */}
-      <ModalSimulateRecycle
-        visible={simulationModalVisible}
-        onClose={() => setSimulationModalVisible(false)}
-        onSimulate={handleSimulateDeposit}
-      />
-
-      {/* MODAL: Transaction Amount Input (Earn/Spend/Redeem) */}
-      <ModalAmountTransaction
-        visible={transactionModalVisible}
-        onClose={() => setTransactionModalVisible(false)}
-        title={transactionModalTitle}
-        description={transactionModalDesc}
-        submitLabel={transactionModalSubmitLabel}
-        onSubmit={handleTransactionSubmit}
-        loading={transactionLoading}
-      />
       </SafeAreaView>
     </SafeAreaProvider>
   );
