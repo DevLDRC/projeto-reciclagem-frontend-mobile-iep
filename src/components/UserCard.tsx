@@ -2,7 +2,7 @@ import React from "react";
 import { StyleSheet, Text, View, TouchableOpacity, Platform } from "react-native";
 import { Trash2, Edit2, Sparkles, FileText } from "lucide-react-native";
 import { User } from "../types";
-import { colors } from "../utils/theme";
+import { colors, fonts } from "../utils/theme";
 
 interface UserCardProps {
   user: User;
@@ -149,11 +149,13 @@ const styles = StyleSheet.create({
   userName: {
     fontSize: 16,
     fontWeight: "800",
+    fontFamily: fonts.bold,
     color: colors.slate900,
     marginBottom: 2,
   },
   userEmail: {
     fontSize: 12,
+    fontFamily: fonts.regular,
     color: colors.slate600,
   },
   typeTag: {
@@ -170,6 +172,7 @@ const styles = StyleSheet.create({
   typeTagText: {
     fontSize: 10,
     fontWeight: "700",
+    fontFamily: fonts.semiBold,
   },
   typeTagTextCustomer: {
     color: colors.lime800,
@@ -193,6 +196,7 @@ const styles = StyleSheet.create({
   },
   detailText: {
     fontSize: 12,
+    fontFamily: fonts.regular,
     color: colors.slate600,
   },
   walletContainer: {
@@ -218,11 +222,13 @@ const styles = StyleSheet.create({
   walletLabel: {
     fontSize: 12,
     fontWeight: "700",
+    fontFamily: fonts.semiBold,
     color: colors.slate600,
   },
   walletBalance: {
     fontSize: 14,
     fontWeight: "800",
+    fontFamily: fonts.bold,
     color: colors.green700,
   },
   walletRightRow: {
@@ -252,6 +258,7 @@ const styles = StyleSheet.create({
   miniBtnText: {
     fontSize: 14,
     fontWeight: "800",
+    fontFamily: fonts.bold,
     color: colors.slate950,
   },
   miniBtnSpendText: {
@@ -265,6 +272,7 @@ const styles = StyleSheet.create({
   walletPrompt: {
     fontSize: 11,
     color: colors.slate600,
+    fontFamily: fonts.medium,
     fontWeight: "500",
   },
   activateWalletBtn: {
@@ -278,6 +286,7 @@ const styles = StyleSheet.create({
   activateWalletText: {
     color: colors.lime500,
     fontSize: 10,
+    fontFamily: fonts.semiBold,
     fontWeight: "700",
   },
   actionRow: {
@@ -299,6 +308,7 @@ const styles = StyleSheet.create({
   actionButtonText: {
     fontSize: 11,
     fontWeight: "600",
+    fontFamily: fonts.semiBold,
     color: colors.slate600,
     marginLeft: 4,
   },

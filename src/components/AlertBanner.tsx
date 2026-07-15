@@ -1,7 +1,7 @@
 import React from "react";
 import { StyleSheet, Text, View } from "react-native";
 import { CheckCircle2, AlertTriangle } from "lucide-react-native";
-import { colors } from "../utils/theme";
+import { colors, fonts } from "../utils/theme";
 
 interface AlertBannerProps {
   message: { text: string; type: "success" | "error" | "warning" } | null;
@@ -47,6 +47,7 @@ const styles = StyleSheet.create({
   alertText: {
     fontSize: 14,
     fontWeight: "600",
+    fontFamily: fonts.semiBold,
     marginLeft: 8,
     flex: 1,
   },

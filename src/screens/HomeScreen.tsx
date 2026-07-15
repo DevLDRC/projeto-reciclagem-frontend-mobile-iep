@@ -24,7 +24,7 @@ import {
 } from "lucide-react-native";
 import { User } from "../types";
 import UserCard from "../components/UserCard";
-import { colors } from "../utils/theme";
+import { colors, fonts } from "../utils/theme";
 
 interface HomeScreenProps {
   loggedInUser: User;
@@ -370,10 +370,12 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 22,
     fontWeight: "900",
+    fontFamily: fonts.bold,
     color: colors.slate900,
     letterSpacing: -0.5,
   },
   headerTitleHighlight: {
+    fontFamily: fonts.bold,
     color: colors.lime500,
   },
   headerActions: {
@@ -416,11 +418,13 @@ const styles = StyleSheet.create({
   welcomeUserText: {
     fontSize: 20,
     fontWeight: "900",
+    fontFamily: fonts.bold,
     color: colors.slate900,
     letterSpacing: -0.5,
   },
   welcomeSubText: {
     fontSize: 12,
+    fontFamily: fonts.regular,
     color: colors.slate600,
     marginTop: 2,
   },
@@ -438,6 +442,7 @@ const styles = StyleSheet.create({
   typeTagText: {
     fontSize: 10,
     fontWeight: "700",
+    fontFamily: fonts.semiBold,
   },
   typeTagTextCustomer: {
     color: colors.lime800,
@@ -476,16 +481,19 @@ const styles = StyleSheet.create({
   ecoCoinLabelText: {
     fontSize: 14,
     fontWeight: "700",
+    fontFamily: fonts.semiBold,
     color: colors.slate200,
   },
   ecoCoinBalanceText: {
     fontSize: 22,
     fontWeight: "900",
+    fontFamily: fonts.bold,
     color: colors.lime400,
   },
   ecoCoinUnit: {
     fontSize: 13,
     color: colors.slate200,
+    fontFamily: fonts.semiBold,
     fontWeight: "600",
   },
   ecoCoinInactiveBlock: {
@@ -496,6 +504,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: colors.slate300,
     marginBottom: 10,
+    fontFamily: fonts.medium,
     fontWeight: "500",
     textAlign: "center",
   },
@@ -508,6 +517,7 @@ const styles = StyleSheet.create({
   activateEcoCoinBtnText: {
     color: colors.slate950,
     fontWeight: "800",
+    fontFamily: fonts.bold,
     fontSize: 13,
   },
   scrollArea: {
@@ -529,6 +539,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 16,
     fontWeight: "800",
+    fontFamily: fonts.bold,
     color: colors.slate900,
     marginBottom: 12,
   },
@@ -543,6 +554,7 @@ const styles = StyleSheet.create({
   addBtnText: {
     color: colors.slate950,
     fontWeight: "700",
+    fontFamily: fonts.semiBold,
     fontSize: 12,
     marginLeft: 4,
   },
@@ -563,12 +575,14 @@ const styles = StyleSheet.create({
   statNumber: {
     fontSize: 20,
     fontWeight: "800",
+    fontFamily: fonts.bold,
     color: colors.slate900,
     marginBottom: 4,
   },
   statLabel: {
     fontSize: 12,
     color: colors.slate600,
+    fontFamily: fonts.medium,
     fontWeight: "500",
   },
   simulationIntroCard: {
@@ -586,12 +600,14 @@ const styles = StyleSheet.create({
   simulationTitle: {
     fontSize: 16,
     fontWeight: "800",
+    fontFamily: fonts.bold,
     color: colors.slate900,
     marginBottom: 6,
   },
   simulationText: {
     fontSize: 12,
     color: colors.slate600,
+    fontFamily: fonts.regular,
     lineHeight: 18,
     textAlign: "center",
     marginBottom: 16,
@@ -607,6 +623,7 @@ const styles = StyleSheet.create({
   simulationBtnText: {
     color: colors.slate950,
     fontWeight: "800",
+    fontFamily: fonts.bold,
     fontSize: 13,
   },
   profileDetailsCard: {
@@ -619,6 +636,7 @@ const styles = StyleSheet.create({
   profileCardTitle: {
     fontSize: 14,
     fontWeight: "800",
+    fontFamily: fonts.bold,
     color: colors.slate900,
     marginBottom: 12,
   },
@@ -632,11 +650,13 @@ const styles = StyleSheet.create({
   },
   profileDetailText: {
     fontSize: 13,
+    fontFamily: fonts.regular,
     color: colors.slate700,
   },
   profileTipText: {
     fontSize: 11,
     color: colors.slate600,
+    fontFamily: fonts.regular,
     lineHeight: 15,
     marginTop: 12,
     fontStyle: "italic",
@@ -644,6 +664,7 @@ const styles = StyleSheet.create({
   managerIntroText: {
     fontSize: 13,
     color: colors.slate600,
+    fontFamily: fonts.regular,
     lineHeight: 18,
     marginBottom: 16,
   },
@@ -655,6 +676,7 @@ const styles = StyleSheet.create({
   loadingText: {
     marginTop: 10,
     color: colors.slate600,
+    fontFamily: fonts.regular,
     fontSize: 12,
   },
   redeemBtn: {
@@ -666,6 +688,7 @@ const styles = StyleSheet.create({
   redeemBtnText: {
     color: colors.slate950,
     fontWeight: "800",
+    fontFamily: fonts.bold,
     fontSize: 13,
   },
   footerSpacing: {
@@ -687,12 +710,14 @@ const styles = StyleSheet.create({
   storeTitle: {
     fontSize: 15,
     fontWeight: "800",
+    fontFamily: fonts.bold,
     color: colors.slate900,
     marginLeft: 8,
   },
   storeSubtitle: {
     fontSize: 11,
     color: colors.slate600,
+    fontFamily: fonts.regular,
     marginBottom: 14,
     lineHeight: 16,
   },
@@ -723,12 +748,14 @@ const styles = StyleSheet.create({
   productName: {
     fontSize: 13,
     fontWeight: "800",
+    fontFamily: fonts.bold,
     color: colors.slate900,
     marginBottom: 2,
   },
   productDesc: {
     fontSize: 11,
     color: colors.slate600,
+    fontFamily: fonts.regular,
     marginBottom: 8,
     lineHeight: 14,
   },
@@ -740,6 +767,7 @@ const styles = StyleSheet.create({
   productPrice: {
     fontSize: 14,
     fontWeight: "900",
+    fontFamily: fonts.bold,
     color: colors.lime800,
   },
   buyBtn: {
@@ -755,6 +783,7 @@ const styles = StyleSheet.create({
   buyBtnText: {
     color: colors.slate950,
     fontWeight: "800",
+    fontFamily: fonts.bold,
     fontSize: 11,
   },
 });

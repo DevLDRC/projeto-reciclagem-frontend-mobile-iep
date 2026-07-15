@@ -11,7 +11,7 @@ import {
 } from "react-native";
 import { Leaf, User as UserIcon, Lock, Mail, FileText } from "lucide-react-native";
 import { TipoUser } from "../types";
-import { colors } from "../utils/theme";
+import { colors, fonts } from "../utils/theme";
 
 interface CadastroScreenProps {
   formName: string;
@@ -193,12 +193,14 @@ const styles = StyleSheet.create({
   authLogoText: {
     fontSize: 32,
     fontWeight: "900",
+    fontFamily: fonts.bold,
     color: colors.slate900,
     letterSpacing: -1,
   },
   authSubtitle: {
     fontSize: 14,
     color: colors.slate600,
+    fontFamily: fonts.regular,
     marginTop: 4,
     fontWeight: "500",
   },
@@ -223,6 +225,7 @@ const styles = StyleSheet.create({
   authCardTitle: {
     fontSize: 20,
     fontWeight: "800",
+    fontFamily: fonts.bold,
     color: colors.slate900,
     marginBottom: 20,
   },
@@ -232,6 +235,7 @@ const styles = StyleSheet.create({
   formLabel: {
     fontSize: 13,
     fontWeight: "700",
+    fontFamily: fonts.semiBold,
     color: colors.slate600,
     marginBottom: 6,
   },
@@ -251,6 +255,7 @@ const styles = StyleSheet.create({
     flex: 1,
     height: 48,
     fontSize: 14,
+    fontFamily: fonts.regular,
     color: colors.slate900,
   },
   typeSelectorRow: {
@@ -274,10 +279,12 @@ const styles = StyleSheet.create({
   typeOptionText: {
     fontSize: 13,
     fontWeight: "700",
+    fontFamily: fonts.semiBold,
     color: colors.slate600,
   },
   typeOptionTextSelected: {
     color: colors.lime800,
+    fontFamily: fonts.bold,
     fontWeight: "700",
   },
   inputWrapperError: {
@@ -287,6 +294,7 @@ const styles = StyleSheet.create({
     color: colors.red500,
     fontSize: 11,
     fontWeight: "600",
+    fontFamily: fonts.semiBold,
     marginTop: 4,
     marginLeft: 4,
   },
@@ -312,6 +320,7 @@ const styles = StyleSheet.create({
   authSubmitBtnText: {
     color: colors.slate950,
     fontWeight: "800",
+    fontFamily: fonts.bold,
     fontSize: 16,
   },
   authSwitchRow: {
@@ -322,11 +331,13 @@ const styles = StyleSheet.create({
   },
   authSwitchText: {
     fontSize: 13,
+    fontFamily: fonts.regular,
     color: colors.slate600,
   },
   authSwitchLink: {
     fontSize: 13,
     fontWeight: "700",
+    fontFamily: fonts.bold,
     color: colors.lime500,
     marginLeft: 6,
   },

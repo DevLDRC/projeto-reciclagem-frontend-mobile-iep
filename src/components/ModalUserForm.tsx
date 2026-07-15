@@ -14,7 +14,7 @@ import {
 } from "react-native";
 import { User as UserIcon, Lock, Mail, FileText } from "lucide-react-native";
 import { User, TipoUser } from "../types";
-import { colors } from "../utils/theme";
+import { colors, fonts } from "../utils/theme";
 
 interface ModalUserFormProps {
   visible: boolean;
@@ -255,6 +255,7 @@ const styles = StyleSheet.create({
   modalTitle: {
     fontSize: 18,
     fontWeight: "800",
+    fontFamily: fonts.bold,
     color: colors.slate900,
   },
   closeModalButton: {
@@ -263,6 +264,7 @@ const styles = StyleSheet.create({
   closeModalText: {
     color: colors.slate600,
     fontWeight: "600",
+    fontFamily: fonts.semiBold,
     fontSize: 14,
   },
   modalForm: {
@@ -274,6 +276,7 @@ const styles = StyleSheet.create({
   formLabel: {
     fontSize: 13,
     fontWeight: "700",
+    fontFamily: fonts.semiBold,
     color: colors.slate700,
     marginBottom: 6,
   },
@@ -293,6 +296,7 @@ const styles = StyleSheet.create({
     flex: 1,
     height: 48,
     fontSize: 14,
+    fontFamily: fonts.regular,
     color: colors.slate900,
   },
   typeSelectorRow: {
@@ -316,10 +320,12 @@ const styles = StyleSheet.create({
   typeOptionText: {
     fontSize: 13,
     fontWeight: "700",
+    fontFamily: fonts.semiBold,
     color: colors.slate600,
   },
   typeOptionTextSelected: {
     color: colors.lime800,
+    fontFamily: fonts.bold,
     fontWeight: "700",
   },
   inputWrapperError: {
@@ -329,6 +335,7 @@ const styles = StyleSheet.create({
     color: colors.red500,
     fontSize: 11,
     fontWeight: "600",
+    fontFamily: fonts.semiBold,
     marginTop: 4,
     marginLeft: 4,
   },
@@ -351,6 +358,7 @@ const styles = StyleSheet.create({
   modalBtnCancelText: {
     color: colors.slate600,
     fontWeight: "700",
+    fontFamily: fonts.semiBold,
     fontSize: 14,
   },
   modalBtnSave: {
@@ -360,6 +368,7 @@ const styles = StyleSheet.create({
   modalBtnSaveText: {
     color: colors.slate950,
     fontWeight: "800",
+    fontFamily: fonts.bold,
     fontSize: 14,
   },
   footerSpacing: {

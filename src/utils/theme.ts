@@ -26,3 +26,10 @@ export const colors = {
   yellow200: "#fef08a",
   yellow700: "#a16207",
 };
+
+export const fonts = {
+  regular: "ChakraPetch_400Regular",
+  medium: "ChakraPetch_500Medium",
+  semiBold: "ChakraPetch_600SemiBold",
+  bold: "ChakraPetch_700Bold",
+};

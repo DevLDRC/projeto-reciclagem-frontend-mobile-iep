@@ -13,7 +13,7 @@ import {
   Alert,
 } from "react-native";
 import { Coins } from "lucide-react-native";
-import { colors } from "../utils/theme";
+import { colors, fonts } from "../utils/theme";
 
 interface ModalAmountTransactionProps {
   visible: boolean;
@@ -143,6 +143,7 @@ const styles = StyleSheet.create({
   modalTitle: {
     fontSize: 18,
     fontWeight: "800",
+    fontFamily: fonts.bold,
     color: colors.slate900,
   },
   closeModalButton: {
@@ -151,6 +152,7 @@ const styles = StyleSheet.create({
   closeModalText: {
     color: colors.slate600,
     fontWeight: "600",
+    fontFamily: fonts.semiBold,
     fontSize: 14,
   },
   modalForm: {
@@ -159,6 +161,7 @@ const styles = StyleSheet.create({
   promptText: {
     fontSize: 13,
     color: colors.slate600,
+    fontFamily: fonts.regular,
     lineHeight: 18,
     marginBottom: 16,
   },
@@ -168,6 +171,7 @@ const styles = StyleSheet.create({
   formLabel: {
     fontSize: 13,
     fontWeight: "700",
+    fontFamily: fonts.semiBold,
     color: colors.slate700,
     marginBottom: 6,
   },
@@ -187,6 +191,7 @@ const styles = StyleSheet.create({
     flex: 1,
     height: 48,
     fontSize: 14,
+    fontFamily: fonts.regular,
     color: colors.slate900,
   },
   modalSubmitRow: {
@@ -208,6 +213,7 @@ const styles = StyleSheet.create({
   modalBtnCancelText: {
     color: colors.slate600,
     fontWeight: "700",
+    fontFamily: fonts.semiBold,
     fontSize: 14,
   },
   modalBtnSave: {
@@ -217,6 +223,7 @@ const styles = StyleSheet.create({
   modalBtnSaveText: {
     color: colors.slate950,
     fontWeight: "800",
+    fontFamily: fonts.bold,
     fontSize: 14,
   },
   footerSpacing: {

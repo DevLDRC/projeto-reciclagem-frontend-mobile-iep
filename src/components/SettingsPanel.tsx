@@ -1,6 +1,6 @@
 import React from "react";
 import { StyleSheet, Text, View, TextInput, TouchableOpacity } from "react-native";
-import { colors } from "../utils/theme";
+import { colors, fonts } from "../utils/theme";
 
 interface SettingsPanelProps {
   backendUrl: string;
@@ -64,12 +64,14 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 16,
     fontWeight: "800",
+    fontFamily: fonts.bold,
     color: colors.slate900,
     marginBottom: 12,
   },
   fieldLabel: {
     fontSize: 12,
     fontWeight: "700",
+    fontFamily: fonts.semiBold,
     color: colors.slate600,
     marginBottom: 6,
     textTransform: "uppercase",
@@ -86,6 +88,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     paddingHorizontal: 12,
     fontSize: 14,
+    fontFamily: fonts.regular,
     color: colors.slate900,
     backgroundColor: colors.slate50,
   },
@@ -101,6 +104,7 @@ const styles = StyleSheet.create({
   testBtnText: {
     color: colors.slate950,
     fontWeight: "700",
+    fontFamily: fonts.bold,
     fontSize: 14,
   },
   presetsRow: {
@@ -117,11 +121,13 @@ const styles = StyleSheet.create({
   presetText: {
     fontSize: 11,
     color: colors.slate600,
+    fontFamily: fonts.semiBold,
     fontWeight: "600",
   },
   settingsHelp: {
     fontSize: 11,
     color: colors.slate600,
+    fontFamily: fonts.regular,
     marginTop: 6,
     lineHeight: 15,
   },

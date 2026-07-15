@@ -10,12 +10,19 @@ import {
   Alert,
 } from "react-native";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
+import {
+  useFonts,
+  ChakraPetch_400Regular,
+  ChakraPetch_500Medium,
+  ChakraPetch_600SemiBold,
+  ChakraPetch_700Bold,
+} from "@expo-google-fonts/chakra-petch";
 import { Leaf, Settings, Wifi, WifiOff } from "lucide-react-native";
 
 // Import types, components and screens
 import { User, Screen, TipoUser } from "./src/types";
 import { convertToISO } from "./src/utils/date";
-import { colors } from "./src/utils/theme";
+import { colors, fonts } from "./src/utils/theme";
 import AlertBanner from "./src/components/AlertBanner";
 import SettingsPanel from "./src/components/SettingsPanel";
 import ModalUserForm from "./src/components/ModalUserForm";
@@ -26,6 +33,13 @@ import CadastroScreen from "./src/screens/CadastroScreen";
 import HomeScreen from "./src/screens/HomeScreen";
 
 export default function App() {
+  const [fontsLoaded] = useFonts({
+    ChakraPetch_400Regular,
+    ChakraPetch_500Medium,
+    ChakraPetch_600SemiBold,
+    ChakraPetch_700Bold,
+  });
+
   // Navigation & User State
   const [currentScreen, setCurrentScreen] = useState<Screen>("LOGIN");
   const [loggedInUser, setLoggedInUser] = useState<User | null>(null);
@@ -629,6 +643,14 @@ export default function App() {
     return user.wallet.amount.toFixed(2);
   };
 
+  if (!fontsLoaded) {
+    return (
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: colors.slate50 }}>
+        <ActivityIndicator size="large" color={colors.lime500} />
+      </View>
+    );
+  }
+
   return (
     <SafeAreaProvider>
       <SafeAreaView style={styles.container}>
@@ -797,10 +819,12 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 22,
     fontWeight: "900",
+    fontFamily: fonts.bold,
     color: colors.slate900,
     letterSpacing: -0.5,
   },
   headerTitleHighlight: {
+    fontFamily: fonts.bold,
     color: colors.lime500,
   },
   headerActions: {
