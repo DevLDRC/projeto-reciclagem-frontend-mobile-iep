@@ -20,7 +20,6 @@ interface LoginScreenProps {
   setLoginPassword: (pass: string) => void;
   onLogin: () => void;
   onNavigateToRegister: () => void;
-  users: User[];
   loading: boolean;
 }
 
@@ -31,7 +30,6 @@ export default function LoginScreen({
   setLoginPassword,
   onLogin,
   onNavigateToRegister,
-  users,
   loading,
 }: LoginScreenProps) {
   return (
@@ -92,37 +90,6 @@ export default function LoginScreen({
             <Text style={styles.authSwitchLink}>Cadastre-se aqui</Text>
           </TouchableOpacity>
         </View>
-      </View>
-
-      {/* Quick Testing Shortcuts */}
-      <View style={styles.presetsPanel}>
-        <Text style={styles.sectionTitle}>Atalhos de Teste Rápido</Text>
-        <Text style={styles.settingsHelp}>
-          Selecione uma conta cadastrada abaixo para preencher automaticamente:
-        </Text>
-        {users.length === 0 ? (
-          <Text style={styles.noUsersPresetText}>
-            Nenhum usuário no banco. Vá em "Cadastre-se aqui" para criar o primeiro!
-          </Text>
-        ) : (
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.presetsList}>
-            {users.map((u) => (
-              <TouchableOpacity
-                key={u.id}
-                style={styles.presetUserBadge}
-                onPress={() => {
-                  setLoginEmail(u.email);
-                  setLoginPassword(u.password || "123456");
-                }}
-              >
-                <Text style={styles.presetUserBadgeText} numberOfLines={1}>
-                  {u.name.split(" ")[0]} ({u.type === "EMPLOYEE" ? "Func" : "Cli"})
-                </Text>
-                <Text style={styles.presetUserBadgeSub}>{u.email}</Text>
-              </TouchableOpacity>
-            ))}
-          </ScrollView>
-        )}
       </View>
     </ScrollView>
   );
@@ -246,56 +213,5 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     color: colors.lime500,
     marginLeft: 6,
-  },
-  presetsPanel: {
-    backgroundColor: "#ffffff",
-    marginHorizontal: 16,
-    marginTop: 20,
-    padding: 16,
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: colors.slate200,
-  },
-  sectionTitle: {
-    fontSize: 16,
-    fontWeight: "800",
-    color: colors.slate900,
-    marginBottom: 12,
-  },
-  settingsHelp: {
-    fontSize: 11,
-    color: colors.slate600,
-    marginTop: 6,
-    lineHeight: 15,
-  },
-  noUsersPresetText: {
-    fontSize: 11,
-    color: colors.slate600,
-    fontStyle: "italic",
-    marginTop: 8,
-  },
-  presetsList: {
-    marginTop: 8,
-    flexDirection: "row",
-  },
-  presetUserBadge: {
-    backgroundColor: colors.slate50,
-    borderWidth: 1,
-    borderColor: colors.slate300,
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    borderRadius: 12,
-    marginRight: 10,
-    minWidth: 110,
-  },
-  presetUserBadgeText: {
-    fontSize: 12,
-    fontWeight: "700",
-    color: colors.slate900,
-  },
-  presetUserBadgeSub: {
-    fontSize: 9,
-    color: colors.slate600,
-    marginTop: 2,
   },
 });

@@ -687,7 +687,6 @@ export default function App() {
           setLoginPassword={setLoginPassword}
           onLogin={handleLogin}
           onNavigateToRegister={() => setCurrentScreen("CADASTRO")}
-          users={users}
           loading={loading}
         />
       )}
