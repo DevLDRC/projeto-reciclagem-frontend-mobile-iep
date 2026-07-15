@@ -9,7 +9,7 @@ import {
   ActivityIndicator,
   Platform,
 } from "react-native";
-import { Leaf, User as UserIcon, Lock, Mail, Calendar, FileText } from "lucide-react-native";
+import { Leaf, User as UserIcon, Lock, Mail, FileText } from "lucide-react-native";
 import { TipoUser } from "../types";
 import { colors } from "../utils/theme";
 
@@ -22,11 +22,8 @@ interface CadastroScreenProps {
   setFormPassword: (val: string) => void;
   formType: TipoUser;
   setFormType: (val: TipoUser) => void;
-  formDateNasc: string;
-  handleDateChange: (val: string) => void;
   formCfp: string;
   setFormCfp: (val: string) => void;
-  dateError: string | null;
   onRegister: () => void;
   onNavigateToLogin: () => void;
   loading: boolean;
@@ -41,11 +38,8 @@ export default function CadastroScreen({
   setFormPassword,
   formType,
   setFormType,
-  formDateNasc,
-  handleDateChange,
   formCfp,
   setFormCfp,
-  dateError,
   onRegister,
   onNavigateToLogin,
   loading,
@@ -146,22 +140,7 @@ export default function CadastroScreen({
           </View>
         </View>
 
-        {/* Birth date */}
-        <View style={styles.formGroup}>
-          <Text style={styles.formLabel}>Data de Nascimento (DD/MM/AAAA)</Text>
-          <View style={[styles.inputWrapper, dateError ? styles.inputWrapperError : null]}>
-            <Calendar size={16} color={colors.slate600} style={styles.inputIcon} />
-            <TextInput
-              style={styles.formInput}
-              value={formDateNasc}
-              onChangeText={handleDateChange}
-              placeholder="Ex: 20/05/2000"
-              keyboardType="numeric"
-              maxLength={10}
-            />
-          </View>
-          {dateError && <Text style={styles.errorText}>{dateError}</Text>}
-        </View>
+
 
         {/* CPF */}
         <View style={styles.formGroup}>

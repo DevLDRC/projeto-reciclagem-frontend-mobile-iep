@@ -13,7 +13,6 @@ export interface User {
   password?: string;
   active: boolean;
   type: TipoUser;
-  dateNasc: string; // ISO string
   cfp: string;
   wallet?: Wallet | null;
   createdAt?: string;

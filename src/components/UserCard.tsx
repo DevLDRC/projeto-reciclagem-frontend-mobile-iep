@@ -1,8 +1,7 @@
 import React from "react";
 import { StyleSheet, Text, View, TouchableOpacity, Platform } from "react-native";
-import { Trash2, Edit2, Sparkles, FileText, Calendar } from "lucide-react-native";
+import { Trash2, Edit2, Sparkles, FileText } from "lucide-react-native";
 import { User } from "../types";
-import { convertToBrazilian } from "../utils/date";
 import { colors } from "../utils/theme";
 
 interface UserCardProps {
@@ -49,12 +48,6 @@ export default function UserCard({
         <View style={styles.detailRow}>
           <FileText size={12} color={colors.slate600} style={styles.detailIcon} />
           <Text style={styles.detailText}>CPF: {user.cfp}</Text>
-        </View>
-        <View style={styles.detailRow}>
-          <Calendar size={12} color={colors.slate600} style={styles.detailIcon} />
-          <Text style={styles.detailText}>
-            Nascimento: {convertToBrazilian(user.dateNasc)}
-          </Text>
         </View>
       </View>
 

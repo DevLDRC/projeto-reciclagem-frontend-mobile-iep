@@ -18,14 +18,12 @@ import {
   Sparkles,
   Plus,
   FileText,
-  Calendar,
   Recycle,
   ShoppingBag,
   Gift,
 } from "lucide-react-native";
 import { User } from "../types";
 import UserCard from "../components/UserCard";
-import { convertToBrazilian } from "../utils/date";
 import { colors } from "../utils/theme";
 
 interface HomeScreenProps {
@@ -285,12 +283,6 @@ export default function HomeScreen({
               <View style={styles.profileDetailRow}>
                 <FileText size={14} color={colors.slate600} style={styles.profileDetailIcon} />
                 <Text style={styles.profileDetailText}>CPF: {loggedInUser.cfp}</Text>
-              </View>
-              <View style={styles.profileDetailRow}>
-                <Calendar size={14} color={colors.slate600} style={styles.profileDetailIcon} />
-                <Text style={styles.profileDetailText}>
-                  Nascimento: {convertToBrazilian(loggedInUser.dateNasc)}
-                </Text>
               </View>
               <Text style={styles.profileTipText}>
                 * Dica: Se quiser gerenciar outros usuários ou excluir cadastros, crie uma conta ou acesse como "Funcionário".

@@ -12,9 +12,8 @@ import {
   ScrollView,
   Alert,
 } from "react-native";
-import { User as UserIcon, Lock, Mail, Calendar, FileText } from "lucide-react-native";
+import { User as UserIcon, Lock, Mail, FileText } from "lucide-react-native";
 import { User, TipoUser } from "../types";
-import { convertToISO, convertToBrazilian } from "../utils/date";
 import { colors } from "../utils/theme";
 
 interface ModalUserFormProps {
@@ -26,7 +25,6 @@ interface ModalUserFormProps {
     email: string;
     password?: string;
     type: TipoUser;
-    dateNasc: string;
     cfp: string;
   }) => void;
   loading: boolean;
@@ -44,9 +42,7 @@ export default function ModalUserForm({
   const [formEmail, setFormEmail] = useState("");
   const [formPassword, setFormPassword] = useState("");
   const [formType, setFormType] = useState<TipoUser>("CUSTOMER");
-  const [formDateNasc, setFormDateNasc] = useState(""); // DD/MM/AAAA
   const [formCfp, setFormCfp] = useState(""); // CPF
-  const [dateError, setDateError] = useState<string | null>(null);
 
   useEffect(() => {
     if (visible) {
@@ -55,86 +51,20 @@ export default function ModalUserForm({
         setFormEmail(editingUser.email);
         setFormPassword("******"); // placeholder for existing password
         setFormType(editingUser.type);
-        setFormDateNasc(convertToBrazilian(editingUser.dateNasc));
         setFormCfp(editingUser.cfp);
       } else {
         setFormName("");
         setFormEmail("");
         setFormPassword("");
         setFormType("CUSTOMER");
-        setFormDateNasc("");
         setFormCfp("");
       }
-      setDateError(null);
     }
   }, [visible, editingUser]);
 
-  // Date input formatter
-  const handleDateChange = (text: string) => {
-    const cleaned = text.replace(/\D/g, "");
-    
-    let formatted = cleaned;
-    if (cleaned.length > 2) {
-      formatted = `${cleaned.slice(0, 2)}/${cleaned.slice(2)}`;
-    }
-    if (cleaned.length > 4) {
-      formatted = `${cleaned.slice(0, 2)}/${cleaned.slice(2, 4)}/${cleaned.slice(4, 8)}`;
-    }
-    
-    setFormDateNasc(formatted);
-
-    if (cleaned.length === 0) {
-      setDateError(null);
-      return;
-    }
-
-    if (cleaned.length >= 2) {
-      const day = parseInt(cleaned.slice(0, 2), 10);
-      if (day < 1 || day > 31) {
-        setDateError("Dia inválido (deve ser entre 01 e 31)");
-        return;
-      }
-    }
-
-    if (cleaned.length >= 4) {
-      const month = parseInt(cleaned.slice(2, 4), 10);
-      if (month < 1 || month > 12) {
-        setDateError("Mês inválido (deve ser entre 01 e 12)");
-        return;
-      }
-    }
-
-    if (cleaned.length === 8) {
-      const day = parseInt(cleaned.slice(0, 2), 10);
-      const month = parseInt(cleaned.slice(2, 4), 10);
-      const year = parseInt(cleaned.slice(4, 8), 10);
-      
-      const monthLengths = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
-      if (year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0)) {
-        monthLengths[1] = 29;
-      }
-
-      if (day > monthLengths[month - 1]) {
-        setDateError(`Mês ${month} tem no máximo ${monthLengths[month - 1]} dias`);
-        return;
-      }
-
-      const currentYear = new Date().getFullYear();
-      if (year < currentYear - 120) {
-        setDateError("Ano de nascimento muito antigo");
-        return;
-      }
-      if (year > currentYear) {
-        setDateError("O ano não pode ser no futuro");
-        return;
-      }
-    }
-
-    setDateError(null);
-  };
 
   const handleSave = () => {
-    if (!formName.trim() || !formEmail.trim() || !formPassword.trim() || !formDateNasc.trim() || !formCfp.trim()) {
+    if (!formName.trim() || !formEmail.trim() || !formPassword.trim() || !formCfp.trim()) {
       Alert.alert("Campos obrigatórios", "Por favor, preencha todos os campos.");
       return;
     }
@@ -144,24 +74,11 @@ export default function ModalUserForm({
       return;
     }
 
-    const dateCleaned = formDateNasc.replace(/\D/g, "");
-    if (dateCleaned.length !== 8) {
-      setDateError("Digite a data completa (DD/MM/AAAA)");
-      Alert.alert("Data incompleta", "Preencha a data de nascimento completa.");
-      return;
-    }
-
-    if (dateError) {
-      Alert.alert("Data inválida", "Corrija os erros na data de nascimento.");
-      return;
-    }
-
     onSave({
       name: formName.trim(),
       email: formEmail.trim(),
       password: formPassword === "******" && editingUser ? undefined : formPassword,
       type: formType,
-      dateNasc: convertToISO(formDateNasc),
       cfp: formCfp.replace(/\D/g, ""),
     });
   };
@@ -269,21 +186,7 @@ export default function ModalUserForm({
               </View>
             </View>
 
-            <View style={styles.formGroup}>
-              <Text style={styles.formLabel}>Data de Nascimento (DD/MM/AAAA)</Text>
-              <View style={[styles.inputWrapper, dateError ? styles.inputWrapperError : null]}>
-                <Calendar size={16} color={colors.slate600} style={styles.inputIcon} />
-                <TextInput
-                  style={styles.formInput}
-                  value={formDateNasc}
-                  onChangeText={handleDateChange}
-                  placeholder="Ex: 20/05/2000"
-                  keyboardType="numeric"
-                  maxLength={10}
-                />
-              </View>
-              {dateError && <Text style={styles.errorText}>{dateError}</Text>}
-            </View>
+
 
             <View style={styles.formGroup}>
               <Text style={styles.formLabel}>CPF (Somente números)</Text>

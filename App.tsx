@@ -51,9 +51,7 @@ export default function App() {
   const [formEmail, setFormEmail] = useState("");
   const [formPassword, setFormPassword] = useState("");
   const [formType, setFormType] = useState<TipoUser>("CUSTOMER");
-  const [formDateNasc, setFormDateNasc] = useState(""); // DD/MM/AAAA
   const [formCfp, setFormCfp] = useState(""); // CPF
-  const [dateError, setDateError] = useState<string | null>(null);
 
   // Manager Panel Modal State (for Employee to Add/Edit users)
   const [managerModalVisible, setManagerModalVisible] = useState(false);
@@ -152,69 +150,6 @@ export default function App() {
     setRefreshing(false);
   }, [backendUrl, loggedInUser]);
 
-  // Date input formatter for Cadastro Screen
-  const handleDateChange = (text: string) => {
-    const cleaned = text.replace(/\D/g, "");
-
-    let formatted = cleaned;
-    if (cleaned.length > 2) {
-      formatted = `${cleaned.slice(0, 2)}/${cleaned.slice(2)}`;
-    }
-    if (cleaned.length > 4) {
-      formatted = `${cleaned.slice(0, 2)}/${cleaned.slice(2, 4)}/${cleaned.slice(4, 8)}`;
-    }
-
-    setFormDateNasc(formatted);
-
-    if (cleaned.length === 0) {
-      setDateError(null);
-      return;
-    }
-
-    if (cleaned.length >= 2) {
-      const day = parseInt(cleaned.slice(0, 2), 10);
-      if (day < 1 || day > 31) {
-        setDateError("Dia inválido (deve ser entre 01 e 31)");
-        return;
-      }
-    }
-
-    if (cleaned.length >= 4) {
-      const month = parseInt(cleaned.slice(2, 4), 10);
-      if (month < 1 || month > 12) {
-        setDateError("Mês inválido (deve ser entre 01 e 12)");
-        return;
-      }
-    }
-
-    if (cleaned.length === 8) {
-      const day = parseInt(cleaned.slice(0, 2), 10);
-      const month = parseInt(cleaned.slice(2, 4), 10);
-      const year = parseInt(cleaned.slice(4, 8), 10);
-
-      const monthLengths = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
-      if (year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0)) {
-        monthLengths[1] = 29;
-      }
-
-      if (day > monthLengths[month - 1]) {
-        setDateError(`Mês ${month} tem no máximo ${monthLengths[month - 1]} dias`);
-        return;
-      }
-
-      const currentYear = new Date().getFullYear();
-      if (year < currentYear - 120) {
-        setDateError("Ano de nascimento muito antigo");
-        return;
-      }
-      if (year > currentYear) {
-        setDateError("O ano não pode ser no futuro");
-        return;
-      }
-    }
-
-    setDateError(null);
-  };
 
   // Perform Login Action (using AuthController JWT)
   const handleLogin = async () => {
@@ -289,25 +224,13 @@ export default function App() {
 
   // Register New User (Self Cadastro via AuthController)
   const handleRegister = async () => {
-    if (!formName.trim() || !formEmail.trim() || !formPassword.trim() || !formDateNasc.trim() || !formCfp.trim()) {
+    if (!formName.trim() || !formEmail.trim() || !formPassword.trim() || !formCfp.trim()) {
       triggerAlert("Preencha todos os campos obrigatórios.", "warning");
       return;
     }
 
     if (!formEmail.includes("@")) {
       triggerAlert("Por favor, insira um e-mail válido.", "warning");
-      return;
-    }
-
-    const dateCleaned = formDateNasc.replace(/\D/g, "");
-    if (dateCleaned.length !== 8) {
-      setDateError("Digite a data completa (DD/MM/AAAA)");
-      triggerAlert("Data de nascimento incompleta.", "warning");
-      return;
-    }
-
-    if (dateError) {
-      triggerAlert("Corrija os erros na data de nascimento.", "warning");
       return;
     }
 
@@ -339,9 +262,7 @@ export default function App() {
         setFormEmail("");
         setFormPassword("");
         setFormType("CUSTOMER");
-        setFormDateNasc("");
         setFormCfp("");
-        setDateError(null);
       } else {
         const errorText = await response.text();
         triggerAlert(`Erro no cadastro: ${errorText || "Operação falhou"}`, "error");
@@ -447,7 +368,6 @@ export default function App() {
     email: string;
     password?: string;
     type: TipoUser;
-    dateNasc: string;
     cfp: string;
   }) => {
     setLoading(true);
@@ -782,11 +702,8 @@ export default function App() {
           setFormPassword={setFormPassword}
           formType={formType}
           setFormType={setFormType}
-          formDateNasc={formDateNasc}
-          handleDateChange={handleDateChange}
           formCfp={formCfp}
           setFormCfp={setFormCfp}
-          dateError={dateError}
           onRegister={handleRegister}
           onNavigateToLogin={() => setCurrentScreen("LOGIN")}
           loading={loading}
