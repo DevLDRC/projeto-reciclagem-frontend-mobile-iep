@@ -72,7 +72,7 @@ export default function HomeScreen({
               Eco<Text style={styles.headerTitleHighlight}>Ciclo</Text>
             </Text>
           </View>
-          
+
           <View style={styles.headerActions}>
             <TouchableOpacity
               style={[styles.connectionIndicator, styles[connectionStatus]]}

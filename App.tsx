@@ -29,15 +29,16 @@ export default function App() {
   // Navigation & User State
   const [currentScreen, setCurrentScreen] = useState<Screen>("LOGIN");
   const [loggedInUser, setLoggedInUser] = useState<User | null>(null);
-  
+  const [token, setToken] = useState<string | null>(null);
+
   // API URL State
-  const [backendUrl, setBackendUrl] = useState("http://10.0.2.2:8080");
+  const [backendUrl, setBackendUrl] = useState("http://localhost:8080");
   const [showSettings, setShowSettings] = useState(false);
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [connectionStatus, setConnectionStatus] = useState<"disconnected" | "connected" | "checking">("disconnected");
-  
+
   // Custom Alert Banner State
   const [alertMessage, setAlertMessage] = useState<{ text: string; type: "success" | "error" | "warning" } | null>(null);
 
@@ -53,7 +54,7 @@ export default function App() {
   const [formDateNasc, setFormDateNasc] = useState(""); // DD/MM/AAAA
   const [formCfp, setFormCfp] = useState(""); // CPF
   const [dateError, setDateError] = useState<string | null>(null);
-  
+
   // Manager Panel Modal State (for Employee to Add/Edit users)
   const [managerModalVisible, setManagerModalVisible] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
@@ -86,8 +87,14 @@ export default function App() {
       const controller = new AbortController();
       const id = setTimeout(() => controller.abort(), 5000); // 5s timeout
 
+      const headers: HeadersInit = {};
+      if (token) {
+        headers["Authorization"] = `Bearer ${token}`;
+      }
+
       const response = await fetch(`${backendUrl.trim()}/users`, {
         signal: controller.signal,
+        headers,
       });
       clearTimeout(id);
 
@@ -95,7 +102,7 @@ export default function App() {
         const data = await response.json();
         setUsers(data);
         setConnectionStatus("connected");
-        
+
         // Refresh logged in user details (like wallet amount)
         if (loggedInUser) {
           const updatedSelf = data.find((u: User) => u.id === loggedInUser.id);
@@ -103,6 +110,8 @@ export default function App() {
             setLoggedInUser(updatedSelf);
           }
         }
+      } else if (response.status === 401 || response.status === 403) {
+        setConnectionStatus("connected");
       } else {
         throw new Error(`Status ${response.status}`);
       }
@@ -125,9 +134,13 @@ export default function App() {
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
     await fetchUsers(true);
-    if (loggedInUser) {
+    if (loggedInUser && token) {
       try {
-        const response = await fetch(`${backendUrl}/users/${loggedInUser.id}`);
+        const response = await fetch(`${backendUrl}/users/${loggedInUser.id}`, {
+          headers: {
+            "Authorization": `Bearer ${token}`,
+          },
+        });
         if (response.ok) {
           const freshUser = await response.json();
           setLoggedInUser(freshUser);
@@ -142,7 +155,7 @@ export default function App() {
   // Date input formatter for Cadastro Screen
   const handleDateChange = (text: string) => {
     const cleaned = text.replace(/\D/g, "");
-    
+
     let formatted = cleaned;
     if (cleaned.length > 2) {
       formatted = `${cleaned.slice(0, 2)}/${cleaned.slice(2)}`;
@@ -150,7 +163,7 @@ export default function App() {
     if (cleaned.length > 4) {
       formatted = `${cleaned.slice(0, 2)}/${cleaned.slice(2, 4)}/${cleaned.slice(4, 8)}`;
     }
-    
+
     setFormDateNasc(formatted);
 
     if (cleaned.length === 0) {
@@ -178,7 +191,7 @@ export default function App() {
       const day = parseInt(cleaned.slice(0, 2), 10);
       const month = parseInt(cleaned.slice(2, 4), 10);
       const year = parseInt(cleaned.slice(4, 8), 10);
-      
+
       const monthLengths = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
       if (year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0)) {
         monthLengths[1] = 29;
@@ -203,7 +216,7 @@ export default function App() {
     setDateError(null);
   };
 
-  // Perform Login Action
+  // Perform Login Action (using AuthController JWT)
   const handleLogin = async () => {
     if (!loginEmail.trim() || !loginPassword.trim()) {
       triggerAlert("Por favor, preencha todos os campos de login.", "warning");
@@ -214,29 +227,57 @@ export default function App() {
     setConnectionStatus("checking");
 
     try {
-      const response = await fetch(`${backendUrl}/users`);
+      const response = await fetch(`${backendUrl}/auth/login`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: loginEmail.toLowerCase().trim(),
+          password: loginPassword,
+        }),
+      });
+
       if (response.ok) {
-        const usersList: User[] = await response.json();
-        setUsers(usersList);
+
+        console.log("response")
+
+        const data = await response.json();
+        const jwtToken = data.token;
+        console.log(jwtToken)
+        setToken(jwtToken);
         setConnectionStatus("connected");
 
-        // Simple auth matching email & password
-        const userFound = usersList.find(
-          (u) => 
-            u.email.toLowerCase().trim() === loginEmail.toLowerCase().trim() && 
-            u.password === loginPassword
-        );
+        console.log("usersResponse")
 
-        if (userFound) {
-          setLoggedInUser(userFound);
-          setLoginPassword(""); // clear password input
-          triggerAlert(`Olá, ${userFound.name}! Login realizado com sucesso.`, "success");
-          setCurrentScreen("HOME");
+        // Load logged in user details using the newly acquired token
+        const usersResponse = await fetch(`${backendUrl}/users`, {
+          headers: {
+            "Authorization": `Bearer ${jwtToken}`,
+          },
+        });
+
+        if (usersResponse.ok) {
+          const usersList: User[] = await usersResponse.json();
+          console.log("Integrantes carregados:", usersList);
+          setUsers(usersList);
+          const userFound = usersList.find(
+            (u) => u.email.toLowerCase().trim() === loginEmail.toLowerCase().trim()
+          );
+
+          if (userFound) {
+            setLoggedInUser(userFound);
+            setLoginPassword(""); // clear password input
+            triggerAlert(`Olá, ${userFound.name}! Login realizado com sucesso.`, "success");
+            setCurrentScreen("HOME");
+          } else {
+            triggerAlert("Perfil de usuário não encontrado.", "error");
+          }
         } else {
-          triggerAlert("E-mail ou senha incorretos.", "error");
+          triggerAlert("Erro ao obter dados do perfil do usuário.", "error");
         }
       } else {
-        throw new Error("Erro de conexão");
+        triggerAlert("E-mail ou senha incorretos.", "error");
       }
     } catch (error) {
       setConnectionStatus("disconnected");
@@ -246,7 +287,7 @@ export default function App() {
     }
   };
 
-  // Register New User (Self Cadastro)
+  // Register New User (Self Cadastro via AuthController)
   const handleRegister = async () => {
     if (!formName.trim() || !formEmail.trim() || !formPassword.trim() || !formDateNasc.trim() || !formCfp.trim()) {
       triggerAlert("Preencha todos os campos obrigatórios.", "warning");
@@ -270,30 +311,29 @@ export default function App() {
       return;
     }
 
-    const userData = {
+    const registerData = {
       name: formName.trim(),
       email: formEmail.trim(),
+      tipoUsuario: formType,
+      cpf: formCfp.replace(/\D/g, ""),
       password: formPassword,
-      type: formType,
-      dateNasc: convertToISO(formDateNasc),
-      cfp: formCfp.replace(/\D/g, ""),
     };
 
     setLoading(true);
     try {
-      const response = await fetch(`${backendUrl}/users`, {
+      const response = await fetch(`${backendUrl}/auth/register`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(userData),
+        body: JSON.stringify(registerData),
       });
 
       if (response.ok) {
         triggerAlert("Conta criada! Preencha a senha para entrar.", "success");
         setLoginEmail(formEmail.trim()); // pre-fill login screen email
         setCurrentScreen("LOGIN");
-        
+
         // Reset cadastro form
         setFormName("");
         setFormEmail("");
@@ -316,6 +356,7 @@ export default function App() {
   // Logout Action
   const handleLogout = () => {
     setLoggedInUser(null);
+    setToken(null);
     setCurrentScreen("LOGIN");
     triggerAlert("Sessão encerrada com sucesso.", "success");
   };
@@ -324,21 +365,25 @@ export default function App() {
   const handleCreateWallet = async (userId: number, isSelf = false) => {
     setLoading(true);
     try {
+      const headers: HeadersInit = {
+        "Content-Type": "application/json",
+      };
+      if (token) {
+        headers["Authorization"] = `Bearer ${token}`;
+      }
       const response = await fetch(`${backendUrl}/wallets/user/${userId}`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers,
       });
 
       if (response.ok) {
         triggerAlert(
-          isSelf 
-            ? "Sua carteira de EcoCoins foi ativada!" 
+          isSelf
+            ? "Sua carteira de EcoCoins foi ativada!"
             : "Carteira ativada com sucesso para o integrante!",
           "success"
         );
-        
+
         // Reload details to get wallet object
         await fetchUsers(true);
       } else {
@@ -365,8 +410,13 @@ export default function App() {
           onPress: async () => {
             setLoading(true);
             try {
+              const headers: HeadersInit = {};
+              if (token) {
+                headers["Authorization"] = `Bearer ${token}`;
+              }
               const response = await fetch(`${backendUrl}/users/${user.id}`, {
                 method: "DELETE",
+                headers,
               });
               if (response.status === 204 || response.ok) {
                 triggerAlert("Integrante excluído com sucesso!", "success");
@@ -403,23 +453,30 @@ export default function App() {
     setLoading(true);
     try {
       let response;
+      const headers: HeadersInit = {
+        "Content-Type": "application/json",
+      };
+      if (token) {
+        headers["Authorization"] = `Bearer ${token}`;
+      }
+
       if (editingUser) {
         response = await fetch(`${backendUrl}/users/${editingUser.id}`, {
           method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-          },
+          headers,
           body: JSON.stringify(userData),
         });
       } else {
-        response = await fetch(`${backendUrl}/users`, {
+        // Register using the /auth/register endpoint so password is BCrypted
+        response = await fetch(`${backendUrl}/auth/register`, {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
+          headers,
           body: JSON.stringify({
-            ...userData,
-            password: userData.password || "123456" // default password if not provided
+            name: userData.name,
+            email: userData.email,
+            tipoUsuario: userData.type,
+            cpf: userData.cfp,
+            password: userData.password || "123456"
           }),
         });
       }
@@ -471,14 +528,21 @@ export default function App() {
     }
 
     const roundedReward = Math.round(coinReward);
-    
+
     setLoading(true);
     try {
+      const headers: HeadersInit = {};
+      if (token) {
+        headers["Authorization"] = `Bearer ${token}`;
+      }
       const response = await fetch(
         `${backendUrl}/wallets/${loggedInUser.wallet.id}/earn?amount=${roundedReward}`,
-        { method: "POST" }
+        {
+          method: "POST",
+          headers,
+        }
       );
-      
+
       if (response.ok) {
         setSimulationModalVisible(false);
         triggerAlert(
@@ -532,13 +596,20 @@ export default function App() {
   // Handle Credit / Debit / Redeem actions from Modals
   const handleTransactionSubmit = async (amount: string) => {
     if (transactionTargetWalletId === null) return;
-    
+
     setTransactionLoading(true);
     try {
       const endpoint = transactionType === "EARN" ? "earn" : "spend";
+      const headers: HeadersInit = {};
+      if (token) {
+        headers["Authorization"] = `Bearer ${token}`;
+      }
       const response = await fetch(
         `${backendUrl}/wallets/${transactionTargetWalletId}/${endpoint}?amount=${amount}`,
-        { method: "POST" }
+        {
+          method: "POST",
+          headers,
+        }
       );
 
       if (response.ok) {
@@ -546,17 +617,21 @@ export default function App() {
           transactionType === "EARN"
             ? `Crédito de ${amount} EC realizado com sucesso!`
             : transactionType === "REDEEM"
-            ? `Resgate de ${amount} EC concluído com sucesso!`
-            : `Débito de ${amount} EC realizado com sucesso!`,
+              ? `Resgate de ${amount} EC concluído com sucesso!`
+              : `Débito de ${amount} EC realizado com sucesso!`,
           "success"
         );
         setTransactionModalVisible(false);
         await fetchUsers(true);
-        
+
         // Also fetch the specific wallet balance to double check sync
         try {
-          const balanceRes = await fetch(`${backendUrl}/wallets/${transactionTargetWalletId}/balance`);
-          const walletRes = await fetch(`${backendUrl}/wallets/${transactionTargetWalletId}`);
+          const headers: HeadersInit = {};
+          if (token) {
+            headers["Authorization"] = `Bearer ${token}`;
+          }
+          const balanceRes = await fetch(`${backendUrl}/wallets/${transactionTargetWalletId}/balance`, { headers });
+          const walletRes = await fetch(`${backendUrl}/wallets/${transactionTargetWalletId}`, { headers });
           if (balanceRes.ok && walletRes.ok) {
             const balanceData = await balanceRes.json();
             const walletData = await walletRes.json();
@@ -597,7 +672,7 @@ export default function App() {
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor={colors.slate50} />
-      
+
       {/* Header bar only visible on Login & Cadastro screens (Home has its own header) */}
       {currentScreen !== "HOME" && (
         <View style={styles.header}>
@@ -655,7 +730,7 @@ export default function App() {
           loading={loading}
         />
       )}
-      
+
       {currentScreen === "CADASTRO" && (
         <CadastroScreen
           formName={formName}
