@@ -2,7 +2,6 @@ import React, { useState, useEffect, useCallback } from "react";
 import {
   StyleSheet,
   View,
-  SafeAreaView,
   StatusBar,
   Platform,
   TouchableOpacity,
@@ -10,6 +9,7 @@ import {
   ActivityIndicator,
   Alert,
 } from "react-native";
+import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import { Leaf, Settings, Wifi, WifiOff } from "lucide-react-native";
 
 // Import types, components and screens
@@ -663,6 +663,46 @@ export default function App() {
     }
   };
 
+  // Product purchase feature (debits real backend wallet via /spend)
+  const handleBuyProduct = async (amount: number, productName: string) => {
+    if (!loggedInUser?.wallet) {
+      triggerAlert("Você precisa de uma carteira ativa para fazer compras.", "warning");
+      return;
+    }
+
+    if (loggedInUser.wallet.amount < amount) {
+      triggerAlert("Saldo de EcoCoins insuficiente para adquirir este produto.", "warning");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const headers: HeadersInit = {};
+      if (token) {
+        headers["Authorization"] = `Bearer ${token}`;
+      }
+      const response = await fetch(
+        `${backendUrl}/wallets/${loggedInUser.wallet.id}/spend?amount=${amount}`,
+        {
+          method: "POST",
+          headers,
+        }
+      );
+
+      if (response.ok) {
+        triggerAlert(`Parabéns! Você adquiriu '${productName}' por ${amount} EcoCoins!`, "success");
+        await fetchUsers(true);
+      } else {
+        const err = await response.text();
+        triggerAlert(`Erro ao realizar compra: ${err || "Saldo insuficiente."}`, "error");
+      }
+    } catch (e) {
+      triggerAlert("Falha ao comunicar com o servidor.", "error");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Total EcoCoins display amount
   const getDisplayAmount = (user: User | null) => {
     if (!user || !user.wallet) return "0.00";
@@ -670,7 +710,8 @@ export default function App() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaProvider>
+      <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor={colors.slate50} />
 
       {/* Header bar only visible on Login & Cadastro screens (Home has its own header) */}
@@ -768,6 +809,7 @@ export default function App() {
           onOpenRedeemModal={openRedeemModal}
           onEarn={openEarnModal}
           onSpend={openSpendModal}
+          onBuyProduct={handleBuyProduct}
           getDisplayAmount={getDisplayAmount}
         />
       )}
@@ -798,7 +840,8 @@ export default function App() {
         onSubmit={handleTransactionSubmit}
         loading={transactionLoading}
       />
-    </SafeAreaView>
+      </SafeAreaView>
+    </SafeAreaProvider>
   );
 }
 

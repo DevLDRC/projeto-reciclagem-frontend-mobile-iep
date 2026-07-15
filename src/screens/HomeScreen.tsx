@@ -20,6 +20,8 @@ import {
   FileText,
   Calendar,
   Recycle,
+  ShoppingBag,
+  Gift,
 } from "lucide-react-native";
 import { User } from "../types";
 import UserCard from "../components/UserCard";
@@ -41,8 +43,40 @@ interface HomeScreenProps {
   onOpenRedeemModal: () => void;
   onEarn?: (walletId: number, userName: string) => void;
   onSpend?: (walletId: number, userName: string) => void;
+  onBuyProduct: (amount: number, productName: string) => void;
   getDisplayAmount: (user: User | null) => string;
 }
+
+const PRODUCTS = [
+  {
+    id: "p1",
+    name: "Sacola Ecológica EcoCiclo",
+    desc: "Sacola de algodão cru reforçado para suas compras diárias.",
+    price: 50,
+    icon: "bag",
+  },
+  {
+    id: "p2",
+    name: "Copo Retrátil de Silicone",
+    desc: "Copo dobrável prático para evitar o uso de descartáveis.",
+    price: 80,
+    icon: "gift",
+  },
+  {
+    id: "p3",
+    name: "Garrafa Térmica Inox 500ml",
+    desc: "Garrafa térmica de alta qualidade para bebidas quentes ou frias.",
+    price: 150,
+    icon: "sparkles",
+  },
+  {
+    id: "p4",
+    name: "Canudo Ecológico de Inox",
+    desc: "Kit com 2 canudos de inox e 1 escovinha de limpeza.",
+    price: 30,
+    icon: "gift",
+  },
+];
 
 export default function HomeScreen({
   loggedInUser,
@@ -59,6 +93,7 @@ export default function HomeScreen({
   onOpenRedeemModal,
   onEarn,
   onSpend,
+  onBuyProduct,
   getDisplayAmount,
 }: HomeScreenProps) {
   return (
@@ -191,6 +226,57 @@ export default function HomeScreen({
               >
                 <Text style={styles.simulationBtnText}>Simular Entrega de Recicláveis</Text>
               </TouchableOpacity>
+            </View>
+
+            {/* Eco Store Section */}
+            <View style={styles.storeContainer}>
+              <View style={styles.storeHeader}>
+                <ShoppingBag size={20} color={colors.slate900} />
+                <Text style={styles.storeTitle}>Loja de Recompensas Ecológicas</Text>
+              </View>
+              <Text style={styles.storeSubtitle}>
+                Troque suas EcoCoins por produtos sustentáveis da nossa cooperativa!
+              </Text>
+
+              {/* Products Grid/List */}
+              <View style={styles.productsList}>
+                {PRODUCTS.map((product) => {
+                  const hasBalance = loggedInUser.wallet 
+                    ? loggedInUser.wallet.amount >= product.price 
+                    : false;
+
+                  return (
+                    <View key={product.id} style={styles.productCard}>
+                      <View style={styles.productIconWrapper}>
+                        {product.icon === "bag" ? (
+                          <ShoppingBag size={22} color={colors.lime500} />
+                        ) : product.icon === "gift" ? (
+                          <Gift size={22} color={colors.lime500} />
+                        ) : (
+                          <Sparkles size={22} color={colors.lime500} />
+                        )}
+                      </View>
+                      <View style={styles.productInfo}>
+                        <Text style={styles.productName}>{product.name}</Text>
+                        <Text style={styles.productDesc}>{product.desc}</Text>
+                        <View style={styles.productFooter}>
+                          <Text style={styles.productPrice}>{product.price} EC</Text>
+                          <TouchableOpacity
+                            style={[
+                              styles.buyBtn,
+                              !hasBalance && styles.buyBtnDisabled
+                            ]}
+                            disabled={!hasBalance}
+                            onPress={() => onBuyProduct(product.price, product.name)}
+                          >
+                            <Text style={styles.buyBtnText}>Comprar</Text>
+                          </TouchableOpacity>
+                        </View>
+                      </View>
+                    </View>
+                  );
+                })}
+              </View>
             </View>
 
             {/* Personal Info details */}
@@ -592,5 +678,91 @@ const styles = StyleSheet.create({
   },
   footerSpacing: {
     height: 50,
+  },
+  storeContainer: {
+    backgroundColor: "#ffffff",
+    borderRadius: 20,
+    padding: 18,
+    borderWidth: 1,
+    borderColor: colors.slate200,
+    marginBottom: 16,
+  },
+  storeHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 6,
+  },
+  storeTitle: {
+    fontSize: 15,
+    fontWeight: "800",
+    color: colors.slate900,
+    marginLeft: 8,
+  },
+  storeSubtitle: {
+    fontSize: 11,
+    color: colors.slate600,
+    marginBottom: 14,
+    lineHeight: 16,
+  },
+  productsList: {
+    gap: 12,
+  },
+  productCard: {
+    flexDirection: "row",
+    backgroundColor: colors.slate50,
+    borderRadius: 14,
+    padding: 12,
+    borderWidth: 1,
+    borderColor: colors.slate100,
+    alignItems: "center",
+  },
+  productIconWrapper: {
+    width: 44,
+    height: 44,
+    borderRadius: 10,
+    backgroundColor: colors.lime100,
+    alignItems: "center",
+    justifyContent: "center",
+    marginRight: 12,
+  },
+  productInfo: {
+    flex: 1,
+  },
+  productName: {
+    fontSize: 13,
+    fontWeight: "800",
+    color: colors.slate900,
+    marginBottom: 2,
+  },
+  productDesc: {
+    fontSize: 11,
+    color: colors.slate600,
+    marginBottom: 8,
+    lineHeight: 14,
+  },
+  productFooter: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  productPrice: {
+    fontSize: 14,
+    fontWeight: "900",
+    color: colors.lime800,
+  },
+  buyBtn: {
+    backgroundColor: colors.lime400,
+    paddingHorizontal: 14,
+    paddingVertical: 6,
+    borderRadius: 8,
+  },
+  buyBtnDisabled: {
+    backgroundColor: colors.slate200,
+    opacity: 0.7,
+  },
+  buyBtnText: {
+    color: colors.slate950,
+    fontWeight: "800",
+    fontSize: 11,
   },
 });
