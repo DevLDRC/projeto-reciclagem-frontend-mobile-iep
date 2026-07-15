@@ -11,6 +11,8 @@ interface UserCardProps {
   onEdit: (user: User) => void;
   onDelete: (user: User) => void;
   onActivateWallet: (userId: number) => void;
+  onEarn?: (walletId: number, userName: string) => void;
+  onSpend?: (walletId: number, userName: string) => void;
 }
 
 export default function UserCard({
@@ -19,6 +21,8 @@ export default function UserCard({
   onEdit,
   onDelete,
   onActivateWallet,
+  onEarn,
+  onSpend,
 }: UserCardProps) {
   return (
     <View style={styles.userCard}>
@@ -61,9 +65,27 @@ export default function UserCard({
               <Sparkles size={14} color={colors.lime500} style={styles.sparkleIcon} />
               <Text style={styles.walletLabel}>EcoCoins</Text>
             </View>
-            <Text style={styles.walletBalance}>
-              {user.wallet.amount.toFixed(2)} EC
-            </Text>
+            <View style={styles.walletRightRow}>
+              <Text style={styles.walletBalance}>
+                {user.wallet.amount.toFixed(2)} EC
+              </Text>
+              {onEarn && onSpend && (
+                <View style={styles.walletActions}>
+                  <TouchableOpacity
+                    style={[styles.miniBtn, styles.miniBtnEarn]}
+                    onPress={() => onEarn(user.wallet!.id, user.name)}
+                  >
+                    <Text style={styles.miniBtnText}>+</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={[styles.miniBtn, styles.miniBtnSpend]}
+                    onPress={() => onSpend(user.wallet!.id, user.name)}
+                  >
+                    <Text style={[styles.miniBtnText, styles.miniBtnSpendText]}>-</Text>
+                  </TouchableOpacity>
+                </View>
+              )}
+            </View>
           </View>
         ) : (
           <View style={styles.inactiveWallet}>
@@ -209,6 +231,38 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: "800",
     color: colors.green700,
+  },
+  walletRightRow: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  walletActions: {
+    flexDirection: "row",
+    marginLeft: 10,
+  },
+  miniBtn: {
+    width: 24,
+    height: 24,
+    borderRadius: 6,
+    alignItems: "center",
+    justifyContent: "center",
+    marginLeft: 6,
+  },
+  miniBtnEarn: {
+    backgroundColor: colors.lime400,
+  },
+  miniBtnSpend: {
+    backgroundColor: colors.red50,
+    borderWidth: 1,
+    borderColor: colors.red200,
+  },
+  miniBtnText: {
+    fontSize: 14,
+    fontWeight: "800",
+    color: colors.slate950,
+  },
+  miniBtnSpendText: {
+    color: colors.red500,
   },
   inactiveWallet: {
     flexDirection: "row",

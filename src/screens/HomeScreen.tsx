@@ -38,6 +38,9 @@ interface HomeScreenProps {
   onDeleteUser: (user: User) => void;
   onOpenManagerModal: (user: User | null) => void;
   onOpenSimulationModal: () => void;
+  onOpenRedeemModal: () => void;
+  onEarn?: (walletId: number, userName: string) => void;
+  onSpend?: (walletId: number, userName: string) => void;
   getDisplayAmount: (user: User | null) => string;
 }
 
@@ -53,6 +56,9 @@ export default function HomeScreen({
   onDeleteUser,
   onOpenManagerModal,
   onOpenSimulationModal,
+  onOpenRedeemModal,
+  onEarn,
+  onSpend,
   getDisplayAmount,
 }: HomeScreenProps) {
   return (
@@ -111,11 +117,21 @@ export default function HomeScreen({
             <View style={styles.ecoCoinContent}>
               <View style={styles.ecoCoinLabelBlock}>
                 <Coins size={22} color={colors.lime400} style={styles.ecoCoinIcon} />
-                <Text style={styles.ecoCoinLabelText}>Saldo EcoCoins</Text>
+                <View>
+                  <Text style={styles.ecoCoinLabelText}>Saldo EcoCoins</Text>
+                  <Text style={styles.ecoCoinBalanceText}>
+                    {getDisplayAmount(loggedInUser)} <Text style={styles.ecoCoinUnit}>EC</Text>
+                  </Text>
+                </View>
               </View>
-              <Text style={styles.ecoCoinBalanceText}>
-                {getDisplayAmount(loggedInUser)} <Text style={styles.ecoCoinUnit}>EC</Text>
-              </Text>
+              {loggedInUser.type === "CUSTOMER" && (
+                <TouchableOpacity
+                  style={styles.redeemBtn}
+                  onPress={onOpenRedeemModal}
+                >
+                  <Text style={styles.redeemBtnText}>Resgatar</Text>
+                </TouchableOpacity>
+              )}
             </View>
           ) : (
             <View style={styles.ecoCoinInactiveBlock}>
@@ -224,6 +240,8 @@ export default function HomeScreen({
                   onEdit={onOpenManagerModal}
                   onDelete={onDeleteUser}
                   onActivateWallet={(uid) => onActivateWallet(uid, false)}
+                  onEarn={onEarn}
+                  onSpend={onSpend}
                 />
               ))
             )}
@@ -560,6 +578,17 @@ const styles = StyleSheet.create({
     marginTop: 10,
     color: colors.slate600,
     fontSize: 12,
+  },
+  redeemBtn: {
+    backgroundColor: colors.lime400,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 10,
+  },
+  redeemBtnText: {
+    color: colors.slate950,
+    fontWeight: "800",
+    fontSize: 13,
   },
   footerSpacing: {
     height: 50,

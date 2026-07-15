@@ -20,6 +20,7 @@ import AlertBanner from "./src/components/AlertBanner";
 import SettingsPanel from "./src/components/SettingsPanel";
 import ModalUserForm from "./src/components/ModalUserForm";
 import ModalSimulateRecycle from "./src/components/ModalSimulateRecycle";
+import ModalAmountTransaction from "./src/components/ModalAmountTransaction";
 import LoginScreen from "./src/screens/LoginScreen";
 import CadastroScreen from "./src/screens/CadastroScreen";
 import HomeScreen from "./src/screens/HomeScreen";
@@ -57,9 +58,17 @@ export default function App() {
   const [managerModalVisible, setManagerModalVisible] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
 
-  // Client Simulation State (Local-only EcoCoins simulator)
-  const [localEcoCoinBonus, setLocalEcoCoinBonus] = useState(0);
+  // Client Simulation State
   const [simulationModalVisible, setSimulationModalVisible] = useState(false);
+
+  // Transaction Modal State
+  const [transactionModalVisible, setTransactionModalVisible] = useState(false);
+  const [transactionModalTitle, setTransactionModalTitle] = useState("");
+  const [transactionModalDesc, setTransactionModalDesc] = useState("");
+  const [transactionModalSubmitLabel, setTransactionModalSubmitLabel] = useState("");
+  const [transactionType, setTransactionType] = useState<"EARN" | "SPEND" | "REDEEM">("EARN");
+  const [transactionTargetWalletId, setTransactionTargetWalletId] = useState<number | null>(null);
+  const [transactionLoading, setTransactionLoading] = useState(false);
 
   // Visual alert helper
   const triggerAlert = (text: string, type: "success" | "error" | "warning" = "success") => {
@@ -116,6 +125,17 @@ export default function App() {
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
     await fetchUsers(true);
+    if (loggedInUser) {
+      try {
+        const response = await fetch(`${backendUrl}/users/${loggedInUser.id}`);
+        if (response.ok) {
+          const freshUser = await response.json();
+          setLoggedInUser(freshUser);
+        }
+      } catch (e) {
+        // ignore
+      }
+    }
     setRefreshing(false);
   }, [backendUrl, loggedInUser]);
 
@@ -209,7 +229,6 @@ export default function App() {
 
         if (userFound) {
           setLoggedInUser(userFound);
-          setLocalEcoCoinBonus(0); // reset simulated bonus
           setLoginPassword(""); // clear password input
           triggerAlert(`Olá, ${userFound.name}! Login realizado com sucesso.`, "success");
           setCurrentScreen("HOME");
@@ -297,7 +316,6 @@ export default function App() {
   // Logout Action
   const handleLogout = () => {
     setLoggedInUser(null);
-    setLocalEcoCoinBonus(0);
     setCurrentScreen("LOGIN");
     triggerAlert("Sessão encerrada com sucesso.", "success");
   };
@@ -306,7 +324,7 @@ export default function App() {
   const handleCreateWallet = async (userId: number, isSelf = false) => {
     setLoading(true);
     try {
-      const response = await fetch(`${backendUrl}/wallet/user/${userId}`, {
+      const response = await fetch(`${backendUrl}/wallets/user/${userId}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -424,8 +442,8 @@ export default function App() {
     }
   };
 
-  // Simulated Recycling Deposit for Customers
-  const handleSimulateDeposit = (simulatedMaterial: string, simulatedWeight: string) => {
+  // Simulated Recycling Deposit for Customers (persisting to backend database)
+  const handleSimulateDeposit = async (simulatedMaterial: string, simulatedWeight: string) => {
     const weightNum = parseFloat(simulatedWeight.trim().replace(",", "."));
     if (isNaN(weightNum) || weightNum <= 0) {
       triggerAlert("Por favor, insira um peso válido.", "warning");
@@ -453,15 +471,127 @@ export default function App() {
     }
 
     const roundedReward = Math.round(coinReward);
-    setLocalEcoCoinBonus(prev => prev + roundedReward);
-    setSimulationModalVisible(false);
-    triggerAlert(`Sucesso! Entrega de ${weightNum}kg de ${materialName} simulada. +${roundedReward} EcoCoins creditadas na sessão!`, "success");
+    
+    setLoading(true);
+    try {
+      const response = await fetch(
+        `${backendUrl}/wallets/${loggedInUser.wallet.id}/earn?amount=${roundedReward}`,
+        { method: "POST" }
+      );
+      
+      if (response.ok) {
+        setSimulationModalVisible(false);
+        triggerAlert(
+          `Sucesso! Entrega de ${weightNum}kg de ${materialName} registrada. +${roundedReward} EcoCoins depositados na sua carteira!`,
+          "success"
+        );
+        await fetchUsers(true);
+      } else {
+        const err = await response.text();
+        triggerAlert(`Erro ao creditar EcoCoins: ${err || "Operação falhou"}`, "error");
+      }
+    } catch (error) {
+      triggerAlert("Falha ao comunicar com o servidor.", "error");
+    } finally {
+      setLoading(false);
+    }
   };
 
-  // Total EcoCoins display amount (incorporating local simulated session gains)
+  // Open transaction modals
+  const openRedeemModal = () => {
+    if (!loggedInUser?.wallet) {
+      triggerAlert("Você precisa de uma carteira ativa para resgatar recompensas.", "warning");
+      return;
+    }
+    setTransactionModalTitle("Resgatar Recompensas");
+    setTransactionModalDesc("Insira a quantidade de EcoCoins (EC) que deseja resgatar em prêmios fictícios:");
+    setTransactionModalSubmitLabel("Resgatar");
+    setTransactionType("REDEEM");
+    setTransactionTargetWalletId(loggedInUser.wallet.id);
+    setTransactionModalVisible(true);
+  };
+
+  const openEarnModal = (walletId: number, userName: string) => {
+    setTransactionModalTitle("Creditar EcoCoins");
+    setTransactionModalDesc(`Insira a quantidade de EcoCoins (EC) para creditar na carteira de ${userName}:`);
+    setTransactionModalSubmitLabel("Creditar");
+    setTransactionType("EARN");
+    setTransactionTargetWalletId(walletId);
+    setTransactionModalVisible(true);
+  };
+
+  const openSpendModal = (walletId: number, userName: string) => {
+    setTransactionModalTitle("Debitar EcoCoins");
+    setTransactionModalDesc(`Insira a quantidade de EcoCoins (EC) para debitar da carteira de ${userName}:`);
+    setTransactionModalSubmitLabel("Debitar");
+    setTransactionType("SPEND");
+    setTransactionTargetWalletId(walletId);
+    setTransactionModalVisible(true);
+  };
+
+  // Handle Credit / Debit / Redeem actions from Modals
+  const handleTransactionSubmit = async (amount: string) => {
+    if (transactionTargetWalletId === null) return;
+    
+    setTransactionLoading(true);
+    try {
+      const endpoint = transactionType === "EARN" ? "earn" : "spend";
+      const response = await fetch(
+        `${backendUrl}/wallets/${transactionTargetWalletId}/${endpoint}?amount=${amount}`,
+        { method: "POST" }
+      );
+
+      if (response.ok) {
+        triggerAlert(
+          transactionType === "EARN"
+            ? `Crédito de ${amount} EC realizado com sucesso!`
+            : transactionType === "REDEEM"
+            ? `Resgate de ${amount} EC concluído com sucesso!`
+            : `Débito de ${amount} EC realizado com sucesso!`,
+          "success"
+        );
+        setTransactionModalVisible(false);
+        await fetchUsers(true);
+        
+        // Also fetch the specific wallet balance to double check sync
+        try {
+          const balanceRes = await fetch(`${backendUrl}/wallets/${transactionTargetWalletId}/balance`);
+          const walletRes = await fetch(`${backendUrl}/wallets/${transactionTargetWalletId}`);
+          if (balanceRes.ok && walletRes.ok) {
+            const balanceData = await balanceRes.json();
+            const walletData = await walletRes.json();
+            console.log("Sincronização confirmada para a carteira de:", walletData.nomeUser);
+            if (loggedInUser && loggedInUser.wallet && loggedInUser.wallet.id === transactionTargetWalletId) {
+              setLoggedInUser(prev => {
+                if (!prev || !prev.wallet) return prev;
+                return {
+                  ...prev,
+                  wallet: {
+                    ...prev.wallet,
+                    amount: parseFloat(balanceData.amount)
+                  }
+                };
+              });
+            }
+          }
+        } catch (e) {
+          // ignore
+        }
+      } else {
+        const errorText = await response.text();
+        triggerAlert(`Erro: ${errorText || "Operação inválida/saldo insuficiente."}`, "error");
+      }
+    } catch (error) {
+      triggerAlert("Falha ao comunicar com o servidor.", "error");
+    } finally {
+      setTransactionLoading(false);
+    }
+  };
+
+  // Total EcoCoins display amount
   const getDisplayAmount = (user: User | null) => {
     if (!user || !user.wallet) return "0.00";
-    return (user.wallet.amount + localEcoCoinBonus).toFixed(2);
+    return user.wallet.amount.toFixed(2);
   };
 
   return (
@@ -560,6 +690,9 @@ export default function App() {
           onDeleteUser={handleDeleteUser}
           onOpenManagerModal={openManagerModal}
           onOpenSimulationModal={() => setSimulationModalVisible(true)}
+          onOpenRedeemModal={openRedeemModal}
+          onEarn={openEarnModal}
+          onSpend={openSpendModal}
           getDisplayAmount={getDisplayAmount}
         />
       )}
@@ -578,6 +711,17 @@ export default function App() {
         visible={simulationModalVisible}
         onClose={() => setSimulationModalVisible(false)}
         onSimulate={handleSimulateDeposit}
+      />
+
+      {/* MODAL: Transaction Amount Input (Earn/Spend/Redeem) */}
+      <ModalAmountTransaction
+        visible={transactionModalVisible}
+        onClose={() => setTransactionModalVisible(false)}
+        title={transactionModalTitle}
+        description={transactionModalDesc}
+        submitLabel={transactionModalSubmitLabel}
+        onSubmit={handleTransactionSubmit}
+        loading={transactionLoading}
       />
     </SafeAreaView>
   );
