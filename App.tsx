@@ -34,6 +34,7 @@ import {
   apiGetWallet,
 } from "./src/http/api";
 import { convertToISO } from "./src/utils/date";
+import { playCoinSound } from "./src/utils/audio";
 import { colors, fonts } from "./src/utils/theme";
 import AlertBanner from "./src/components/AlertBanner";
 import SettingsPanel from "./src/components/SettingsPanel";
@@ -425,6 +426,7 @@ export default function App() {
       );
 
       if (response.ok) {
+        playCoinSound();
         setSimulationModalVisible(false);
         triggerAlert(
           `Sucesso! Entrega de ${weightNum}kg de ${materialName} registrada. +${roundedReward} EcoCoins depositados na sua carteira!`,
