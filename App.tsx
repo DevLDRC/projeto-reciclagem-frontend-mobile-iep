@@ -21,6 +21,18 @@ import { Leaf, Settings, Wifi, WifiOff } from "lucide-react-native";
 
 // Import types, components and screens
 import { User, Screen, TipoUser } from "./src/types";
+import {
+  apiGetUsers,
+  apiGetUser,
+  apiLogin,
+  apiRegister,
+  apiCreateWallet,
+  apiDeleteUser,
+  apiUpdateUser,
+  apiTransaction,
+  apiGetWalletBalance,
+  apiGetWallet,
+} from "./src/http/api";
 import { convertToISO } from "./src/utils/date";
 import { colors, fonts } from "./src/utils/theme";
 import AlertBanner from "./src/components/AlertBanner";
@@ -46,7 +58,7 @@ export default function App() {
   const [token, setToken] = useState<string | null>(null);
 
   // API URL State
-  const [backendUrl, setBackendUrl] = useState("https://banister-deodorize-unsavory.ngrok-free.dev");
+  const [backendUrl, setBackendUrl] = useState("");
   const [showSettings, setShowSettings] = useState(false);
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(false);
@@ -99,15 +111,7 @@ export default function App() {
       const controller = new AbortController();
       const id = setTimeout(() => controller.abort(), 5000); // 5s timeout
 
-      const headers: HeadersInit = {};
-      if (token) {
-        headers["Authorization"] = `Bearer ${token}`;
-      }
-
-      const response = await fetch(`${backendUrl.trim()}/users`, {
-        signal: controller.signal,
-        headers,
-      });
+      const response = await apiGetUsers(backendUrl, token, controller.signal);
       clearTimeout(id);
 
       if (response.ok) {
@@ -148,11 +152,7 @@ export default function App() {
     await fetchUsers(true);
     if (loggedInUser && token) {
       try {
-        const response = await fetch(`${backendUrl}/users/${loggedInUser.id}`, {
-          headers: {
-            "Authorization": `Bearer ${token}`,
-          },
-        });
+        const response = await apiGetUser(backendUrl, loggedInUser.id, token);
         if (response.ok) {
           const freshUser = await response.json();
           setLoggedInUser(freshUser);
@@ -176,16 +176,7 @@ export default function App() {
     setConnectionStatus("checking");
 
     try {
-      const response = await fetch(`${backendUrl}/auth/login`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          email: loginEmail.toLowerCase().trim(),
-          password: loginPassword,
-        }),
-      });
+      const response = await apiLogin(backendUrl, loginEmail, loginPassword);
 
       if (response.ok) {
 
@@ -200,15 +191,12 @@ export default function App() {
         console.log("usersResponse")
 
         // Load logged in user details using the newly acquired token
-        const usersResponse = await fetch(`${backendUrl}/users`, {
-          headers: {
-            "Authorization": `Bearer ${jwtToken}`,
-          },
-        });
+        const usersResponse = await apiGetUsers(backendUrl, jwtToken);
 
         if (usersResponse.ok) {
           const usersList: User[] = await usersResponse.json();
-          console.log("Integrantes carregados:", usersList);
+          console.log("Integrantes carregados:");
+          console.log(JSON.stringify(usersList, null, 2));
           setUsers(usersList);
           const userFound = usersList.find(
             (u) => u.email.toLowerCase().trim() === loginEmail.toLowerCase().trim()
@@ -258,13 +246,7 @@ export default function App() {
 
     setLoading(true);
     try {
-      const response = await fetch(`${backendUrl}/auth/register`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(registerData),
-      });
+      const response = await apiRegister(backendUrl, registerData);
 
       if (response.ok) {
         triggerAlert("Conta criada! Preencha a senha para entrar.", "success");
@@ -300,16 +282,7 @@ export default function App() {
   const handleCreateWallet = async (userId: number, isSelf = false) => {
     setLoading(true);
     try {
-      const headers: HeadersInit = {
-        "Content-Type": "application/json",
-      };
-      if (token) {
-        headers["Authorization"] = `Bearer ${token}`;
-      }
-      const response = await fetch(`${backendUrl}/wallets/user/${userId}`, {
-        method: "POST",
-        headers,
-      });
+      const response = await apiCreateWallet(backendUrl, userId, token);
 
       if (response.ok) {
         triggerAlert(
@@ -345,14 +318,7 @@ export default function App() {
           onPress: async () => {
             setLoading(true);
             try {
-              const headers: HeadersInit = {};
-              if (token) {
-                headers["Authorization"] = `Bearer ${token}`;
-              }
-              const response = await fetch(`${backendUrl}/users/${user.id}`, {
-                method: "DELETE",
-                headers,
-              });
+              const response = await apiDeleteUser(backendUrl, user.id, token);
               if (response.status === 204 || response.ok) {
                 triggerAlert("Integrante excluído com sucesso!", "success");
                 fetchUsers(true);
@@ -387,31 +353,16 @@ export default function App() {
     setLoading(true);
     try {
       let response;
-      const headers: HeadersInit = {
-        "Content-Type": "application/json",
-      };
-      if (token) {
-        headers["Authorization"] = `Bearer ${token}`;
-      }
-
       if (editingUser) {
-        response = await fetch(`${backendUrl}/users/${editingUser.id}`, {
-          method: "PUT",
-          headers,
-          body: JSON.stringify(userData),
-        });
+        response = await apiUpdateUser(backendUrl, editingUser.id, userData, token);
       } else {
         // Register using the /auth/register endpoint so password is BCrypted
-        response = await fetch(`${backendUrl}/auth/register`, {
-          method: "POST",
-          headers,
-          body: JSON.stringify({
-            name: userData.name,
-            email: userData.email,
-            tipoUsuario: userData.type,
-            cpf: userData.cfp,
-            password: userData.password || "123456"
-          }),
+        response = await apiRegister(backendUrl, {
+          name: userData.name,
+          email: userData.email,
+          tipoUsuario: userData.type,
+          cpf: userData.cfp,
+          password: userData.password || "123456"
         });
       }
 
@@ -465,16 +416,12 @@ export default function App() {
 
     setLoading(true);
     try {
-      const headers: HeadersInit = {};
-      if (token) {
-        headers["Authorization"] = `Bearer ${token}`;
-      }
-      const response = await fetch(
-        `${backendUrl}/wallets/${loggedInUser.wallet.id}/earn?amount=${roundedReward}`,
-        {
-          method: "POST",
-          headers,
-        }
+      const response = await apiTransaction(
+        backendUrl,
+        loggedInUser.wallet.id,
+        "earn",
+        roundedReward.toString(),
+        token
       );
 
       if (response.ok) {
@@ -534,16 +481,12 @@ export default function App() {
     setTransactionLoading(true);
     try {
       const endpoint = transactionType === "EARN" ? "earn" : "spend";
-      const headers: HeadersInit = {};
-      if (token) {
-        headers["Authorization"] = `Bearer ${token}`;
-      }
-      const response = await fetch(
-        `${backendUrl}/wallets/${transactionTargetWalletId}/${endpoint}?amount=${amount}`,
-        {
-          method: "POST",
-          headers,
-        }
+      const response = await apiTransaction(
+        backendUrl,
+        transactionTargetWalletId,
+        endpoint,
+        amount,
+        token
       );
 
       if (response.ok) {
@@ -560,12 +503,8 @@ export default function App() {
 
         // Also fetch the specific wallet balance to double check sync
         try {
-          const headers: HeadersInit = {};
-          if (token) {
-            headers["Authorization"] = `Bearer ${token}`;
-          }
-          const balanceRes = await fetch(`${backendUrl}/wallets/${transactionTargetWalletId}/balance`, { headers });
-          const walletRes = await fetch(`${backendUrl}/wallets/${transactionTargetWalletId}`, { headers });
+          const balanceRes = await apiGetWalletBalance(backendUrl, transactionTargetWalletId, token);
+          const walletRes = await apiGetWallet(backendUrl, transactionTargetWalletId, token);
           if (balanceRes.ok && walletRes.ok) {
             const balanceData = await balanceRes.json();
             const walletData = await walletRes.json();
@@ -611,16 +550,12 @@ export default function App() {
 
     setLoading(true);
     try {
-      const headers: HeadersInit = {};
-      if (token) {
-        headers["Authorization"] = `Bearer ${token}`;
-      }
-      const response = await fetch(
-        `${backendUrl}/wallets/${loggedInUser.wallet.id}/spend?amount=${amount}`,
-        {
-          method: "POST",
-          headers,
-        }
+      const response = await apiTransaction(
+        backendUrl,
+        loggedInUser.wallet.id,
+        "spend",
+        amount.toString(),
+        token
       );
 
       if (response.ok) {
