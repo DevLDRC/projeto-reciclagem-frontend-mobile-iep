@@ -202,11 +202,15 @@ export default function HomeScreen({
             {/* simulated statistics */}
             <View style={styles.statsGrid}>
               <View style={styles.statCard}>
-                <Text style={styles.statNumber}>12</Text>
+                <Text style={styles.statNumber}>
+                  {loggedInUser.descartes ?? 0}
+                </Text>
                 <Text style={styles.statLabel}>Descartes</Text>
               </View>
               <View style={styles.statCard}>
-                <Text style={styles.statNumber}>24.5 kg</Text>
+                <Text style={styles.statNumber}>
+                  {(loggedInUser.totalColetado ?? 0).toFixed(1)} kg
+                </Text>
                 <Text style={styles.statLabel}>Total Coletado</Text>
               </View>
             </View>

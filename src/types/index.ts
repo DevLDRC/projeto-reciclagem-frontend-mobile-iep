@@ -14,6 +14,8 @@ export interface User {
   active: boolean;
   type: TipoUser;
   cfp: string;
+  totalColetado?: number | null;
+  descartes?: number | null;
   wallet?: Wallet | null;
   createdAt?: string;
   updatedAt?: string;

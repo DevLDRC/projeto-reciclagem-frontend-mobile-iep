@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import {
   StyleSheet,
   View,
@@ -95,6 +95,31 @@ export default function App() {
   const [transactionType, setTransactionType] = useState<"EARN" | "SPEND" | "REDEEM">("EARN");
   const [transactionTargetWalletId, setTransactionTargetWalletId] = useState<number | null>(null);
   const [transactionLoading, setTransactionLoading] = useState(false);
+
+  // Local cache for descartes & weights since backend doesn't increment them on /earn
+  const [localDescartes, setLocalDescartes] = useState<Record<string, number>>({});
+  const [localTotalColetado, setLocalTotalColetado] = useState<Record<string, number>>({});
+
+  const enrichedUsers = useMemo(() => {
+    return users.map((u: User) => {
+      const emailKey = u.email.toLowerCase().trim();
+      return {
+        ...u,
+        descartes: (u.descartes ?? 0) + (localDescartes[emailKey] ?? 0),
+        totalColetado: (u.totalColetado ?? 0) + (localTotalColetado[emailKey] ?? 0),
+      };
+    });
+  }, [users, localDescartes, localTotalColetado]);
+
+  const enrichedLoggedInUser = useMemo(() => {
+    if (!loggedInUser) return null;
+    const emailKey = loggedInUser.email.toLowerCase().trim();
+    return {
+      ...loggedInUser,
+      descartes: (loggedInUser.descartes ?? 0) + (localDescartes[emailKey] ?? 0),
+      totalColetado: (loggedInUser.totalColetado ?? 0) + (localTotalColetado[emailKey] ?? 0),
+    };
+  }, [loggedInUser, localDescartes, localTotalColetado]);
 
   // Visual alert helper
   const triggerAlert = (text: string, type: "success" | "error" | "warning" = "success") => {
@@ -426,6 +451,19 @@ export default function App() {
       );
 
       if (response.ok) {
+        // Increment stats locally
+        if (loggedInUser) {
+          const emailKey = loggedInUser.email.toLowerCase().trim();
+          setLocalDescartes((prev) => ({
+            ...prev,
+            [emailKey]: (prev[emailKey] ?? 0) + 1,
+          }));
+          setLocalTotalColetado((prev) => ({
+            ...prev,
+            [emailKey]: (prev[emailKey] ?? 0) + weightNum,
+          }));
+        }
+
         playCoinSound();
         setSimulationModalVisible(false);
         triggerAlert(
@@ -670,8 +708,8 @@ export default function App() {
 
         {currentScreen === "HOME" && loggedInUser && (
           <HomeScreen
-            loggedInUser={loggedInUser}
-            users={users}
+            loggedInUser={enrichedLoggedInUser!}
+            users={enrichedUsers}
             connectionStatus={connectionStatus}
             refreshing={refreshing}
             onRefresh={onRefresh}
