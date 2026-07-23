@@ -1,10 +1,10 @@
 {
   "expo": {
-    "name": "projeto-reciclagem-frontend-mobile-iep",
+    "name": "EcoCycle",
     "slug": "projeto-reciclagem-frontend-mobile-iep",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./assets/logo/icon.png",
     "userInterfaceStyle": "light",
     "ios": {
       "supportsTablet": true
