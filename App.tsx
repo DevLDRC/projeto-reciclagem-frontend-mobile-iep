@@ -59,7 +59,7 @@ export default function App() {
   const [token, setToken] = useState<string | null>(null);
 
   // API URL State
-  const [backendUrl, setBackendUrl] = useState("");
+  const [backendUrl, setBackendUrl] = useState("https://projeto-reciclagem-backend-iep.onrender.com");
   const [showSettings, setShowSettings] = useState(false);
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(false);
